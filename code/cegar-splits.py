@@ -62,14 +62,17 @@ exp.add_report(
 	AbsoluteReport(attributes=ATTRIBUTES), outfile='report.html')
 
 # Add scatter plot report step.
-exp.add_report(
-	ScatterPlotReport(
-		attributes=["expansions_until_last_jump"], filter_algorithm=["random", "min_cg"]),
-	outfile='scatter_min_cg.png')
-exp.add_report(
-	ScatterPlotReport(
-		attributes=["expansions_until_last_jump"], filter_algorithm=["random", "max_cg"]),
-	outfile='scatter_max_cg.png')
+def addScatterPlot(attrib, algorithm, compare="random"):
+	filename = 'scatter-' + attrib + '-' + algorithm
+	if compare != "random":
+		filename = filename + '-' + compare
+	exp.add_report(
+		ScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm]),
+	outfile=filename + '.png')
+addScatterPlot("expansions_until_last_jump", "min_cg")
+addScatterPlot("expansions_until_last_jump", "max_cg")
+addScatterPlot("search_start_time", "min_cg")
+addScatterPlot("search_start_time", "max_cg")
 
 # Parse the commandline and show or run experiment steps.
 exp.run_steps()
