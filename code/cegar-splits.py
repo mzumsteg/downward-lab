@@ -8,7 +8,7 @@ import platform
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 
-from downward.experiment import FastDownwardExperiment
+from experiment import CEGARExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.scatter import ScatterPlotReport
 
@@ -27,21 +27,23 @@ REPO = os.environ["DOWNWARD_REPO"]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
-exp = FastDownwardExperiment(environment=ENV, revision_cache=REVISION_CACHE)
-
-# Add built-in parsers to the experiment.
-exp.add_parser(exp.EXITCODE_PARSER)
-exp.add_parser(exp.TRANSLATOR_PARSER)
-exp.add_parser(exp.SINGLE_SEARCH_PARSER)
-exp.add_parser(exp.PLANNER_PARSER)
-# Add custom parsers to the experiment.
-DIR = os.path.dirname(os.path.abspath(__file__))
-exp.add_parser(os.path.join(DIR, "start-parser.py"))
-exp.add_parser(os.path.join(DIR, "split-time-parser.py"))
+exp = CEGARExperiment(soft_limit=20*1024, hard_limit=50*1024, environment=ENV, revision_cache=REVISION_CACHE)
 
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 exp.add_algorithm('random', REPO, 'refinement-strategies',
 	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=RANDOM))'])
+exp.add_algorithm('min_unwanted', REPO, 'refinement-strategies',
+	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_UNWANTED))'])
+exp.add_algorithm('max_unwanted', REPO, 'refinement-strategies',
+	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_UNWANTED))'])
+exp.add_algorithm('min_refined', REPO, 'refinement-strategies',
+	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_REFINED))'])
+exp.add_algorithm('max_refined', REPO, 'refinement-strategies',
+	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_REFINED))'])
+exp.add_algorithm('min_hadd', REPO, 'refinement-strategies',
+	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_HADD))'])
+exp.add_algorithm('max_hadd', REPO, 'refinement-strategies',
+	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_HADD))'])
 exp.add_algorithm('min_cg', REPO, 'refinement-strategies',
 	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_CG))'])
 exp.add_algorithm('max_cg', REPO, 'refinement-strategies',
