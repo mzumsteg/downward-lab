@@ -28,26 +28,14 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
 exp = CEGARExperiment(soft_limit=20*1024, hard_limit=50*1024, environment=ENV, revision_cache=REVISION_CACHE)
-
 exp.add_suite(BENCHMARKS_DIR, SUITE)
-exp.add_algorithm('random', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=RANDOM))'])
-exp.add_algorithm('min_unwanted', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_UNWANTED))'])
-exp.add_algorithm('max_unwanted', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_UNWANTED))'])
-exp.add_algorithm('min_refined', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_REFINED))'])
-exp.add_algorithm('max_refined', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_REFINED))'])
-exp.add_algorithm('min_hadd', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_HADD))'])
-exp.add_algorithm('max_hadd', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_HADD))'])
-exp.add_algorithm('min_cg', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MIN_CG))'])
-exp.add_algorithm('max_cg', REPO, 'refinement-strategies',
-	['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=MAX_CG))'])
+
+algorithms = ["RANDOM", "MIN_UNWANTED", "MAX_UNWANTED",
+	"MIN_REFINED", "MAX_REFINED", "MIN_HADD", "MAX_HADD",
+	"MIN_CG", "MAX_CG"]
+for alg in algorithms:
+	exp.add_algorithm(alg.lower(), REPO, 'refinement-strategies',
+		['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=' + alg + '))'])
 
 # Add step that writes experiment files to disk.
 exp.add_step('build', exp.build)
@@ -71,10 +59,10 @@ def addScatterPlot(attrib, algorithm, compare="random"):
 	exp.add_report(
 		ScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm]),
 	outfile=filename + '.png')
-addScatterPlot("expansions_until_last_jump", "min_cg")
-addScatterPlot("expansions_until_last_jump", "max_cg")
-addScatterPlot("search_start_time", "min_cg")
-addScatterPlot("search_start_time", "max_cg")
+
+for alg in algorithms:
+	addScatterPlot("expansions_until_last_jump", alg.lower())
+	addScatterPlot("search_start_time", alg.lower())
 
 # Parse the commandline and show or run experiment steps.
 exp.run_steps()
