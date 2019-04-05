@@ -32,7 +32,7 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 algorithms = ["RANDOM", "MIN_UNWANTED", "MAX_UNWANTED",
 	"MIN_REFINED", "MAX_REFINED", "MIN_HADD", "MAX_HADD",
-	"MIN_CG", "MAX_CG"]
+	"MIN_CG", "MAX_CG", "MIN_GOAL_DIST", "MAX_GOAL_DIST"]
 for alg in algorithms:
 	exp.add_algorithm(alg.lower(), REPO, 'refinement-strategies',
 		['--search', 'astar(cegar(subtasks=[original()], max_states=10K, max_transitions=infinity, max_time=infinity, pick=' + alg + '))'])
