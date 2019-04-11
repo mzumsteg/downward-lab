@@ -11,6 +11,8 @@ from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from experiment import CEGARExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.scatter import ScatterPlotReport
+from per_task_comparison import PerTaskComparison
+from relativescatter import RelativeScatterPlotReport
 
 
 ATTRIBUTES = ["coverage", "error", "expansions_until_last_jump", "initial_h_value", "search_start_time", "search_start_memory", "split_time"]
@@ -21,8 +23,8 @@ if NODE.endswith(".scicore.unibas.ch") or NODE.endswith(".cluster.bc2.ch"):
 	ENV = BaselSlurmEnvironment(email="mar.zumsteg@stud.unibas.ch")
 else:
 	SUITE = ['depot:p01.pddl', 'depot:p02.pddl',
-        'gripper:prob01.pddl', 'gripper:prob02.pddl', 'gripper:prob03.pddl',
-        'mystery:prob01.pddl', 'mystery:prob03.pddl']
+		'gripper:prob01.pddl', 'gripper:prob02.pddl', 'gripper:prob03.pddl',
+		'mystery:prob01.pddl', 'mystery:prob03.pddl']
 	ENV = LocalEnvironment(processes=6)
 # Use path to your Fast Downward repository.
 REPO = os.environ["DOWNWARD_REPO"]
@@ -52,6 +54,8 @@ exp.add_fetcher(name='fetch')
 # Add report step (AbsoluteReport is the standard report).
 exp.add_report(
 	AbsoluteReport(attributes=ATTRIBUTES), outfile='report.html')
+exp.add_report(
+	PerTaskComparison(sort=True, attributes=["expansions_until_last_jump"]), outfile='task_comparison.html')
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):
@@ -59,7 +63,7 @@ def addScatterPlot(attrib, algorithm, compare="random"):
 	if compare != "random":
 		filename = filename + '-' + compare
 	exp.add_report(
-		ScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm]),
+		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm]),
 	outfile=filename + '.png')
 
 for alg in algorithms:
