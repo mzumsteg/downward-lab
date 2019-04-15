@@ -18,6 +18,7 @@ class CEGARExperiment(FastDownwardExperiment):
 		DIR = os.path.dirname(os.path.abspath(__file__))
 		self.add_parser(os.path.join(DIR, "start-parser.py"))
 		self.add_parser(os.path.join(DIR, "split-time-parser.py"))
+		self.add_parser(os.path.join(DIR, "average-split-parser.py"))
 	
 	def _add_runs(self):
 		FastDownwardExperiment._add_runs(self)

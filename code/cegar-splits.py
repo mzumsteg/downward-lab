@@ -8,14 +8,19 @@ import platform
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 
+from lab.reports import Attribute
 from experiment import CEGARExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.scatter import ScatterPlotReport
 from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 
-
-ATTRIBUTES = ["coverage", "error", "expansions_until_last_jump", "initial_h_value", "search_start_time", "search_start_memory", "split_time"]
+def mean(list):
+    return sum(list) / len(list)
+ATTRIBUTES = ["coverage", "error", "expansions_until_last_jump", "initial_h_value",
+    "search_start_time", "search_start_memory", "split_time",
+    Attribute("average_split_options", functions=mean, min_wins=False),
+    Attribute("average_distinct_rated", functions=mean, min_wins=False)]
 
 NODE = platform.node()
 if NODE.endswith(".scicore.unibas.ch") or NODE.endswith(".cluster.bc2.ch"):
