@@ -60,7 +60,7 @@ exp.add_fetcher(name='fetch')
 
 # Add report step (AbsoluteReport is the standard report).
 exp.add_report(
-	AbsoluteReport(attributes=ATTRIBUTES, filter=lambda run: "_hadd" not in run["algorithm"]), outfile='report.html')
+	AbsoluteReport(attributes=ATTRIBUTES), outfile='report.html')
 exp.add_report(
 	PerTaskComparison(sort=True, attributes=["expansions_until_last_jump"]), outfile='task_comparison.html')
 exp.add_report(
