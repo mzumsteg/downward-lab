@@ -30,6 +30,7 @@ class RelativeScatterMatplotlib(Matplotlib):
         else:
             plot_size = report.missing_val * 1.25
 
+        """
         # make 5 ticks above and below 1
         yticks = []
         tick_step = report.ylim_top**(1/5.0)
@@ -37,6 +38,9 @@ class RelativeScatterMatplotlib(Matplotlib):
             yticks.append(tick_step**i)
         axes.set_yticks(yticks)
         axes.get_yaxis().set_major_formatter(ticker.ScalarFormatter())
+        """
+        # use built-in log scale so all ticks are readable
+        axes.set_yscale("log")
 
         axes.set_xlim(report.xlim_left or -1, report.xlim_right or plot_size)
         axes.set_ylim(report.ylim_bottom or -1, report.ylim_top or plot_size)
@@ -105,8 +109,13 @@ class RelativeScatterPlotReport(ScatterPlotReport):
     of algorithm 2 on the y-axis.
     """
 
-    def __init__(self, show_missing=True, get_category=None, **kwargs):
+    def __init__(self, show_missing=True, get_category=None, xlim_left = None, xlim_right = None,
+            ylim_bottom = None, ylim_top = None, **kwargs):
         ScatterPlotReport.__init__(self, show_missing, get_category, **kwargs)
+        self.xlim_left = xlim_left
+        self.xlim_right = xlim_right
+        self.ylim_bottom = ylim_bottom
+        self.ylim_top = ylim_top
         if self.output_format == 'tex':
             self.writer = RelativeScatterPgfPlots
         else:
@@ -116,9 +125,9 @@ class RelativeScatterPlotReport(ScatterPlotReport):
         # We discard the *runs* parameter.
         # Map category names to value tuples
         categories = defaultdict(list)
-        self.ylim_bottom = 2
-        self.ylim_top = 0.5
-        self.xlim_left = float("inf")
+        ylim_bottom = 2
+        ylim_top = 0.5
+        xlim_left = float("inf")
         xbetter = 0
         ybetter = 0
         for (domain, problem), runs in self.problem_runs.items():
@@ -139,19 +148,23 @@ class RelativeScatterPlotReport(ScatterPlotReport):
 
             categories[category].append((x, y))
 
-            self.ylim_top = max(self.ylim_top, y)
-            self.ylim_bottom = min(self.ylim_bottom, y)
-            self.xlim_left = min(self.xlim_left, x)
+            ylim_top = max(ylim_top, y)
+            ylim_bottom = min(ylim_bottom, y)
+            xlim_left = min(xlim_left, x)
 
             if val1 > val2:
                 xbetter += 1
             elif val1 < val2:
                 ybetter += 1
         if not categories:
-            self.ylim_bottom = 0.5
-            self.ylim_top = 2
-            self.xlim_left = 0.5
+            ylim_bottom = 0.5
+            ylim_top = 2
+            xlim_left = 0.5
 
+        # use guessed limits only if not fixed
+        self.xlim_left = self.xlim_left or xlim_left
+        self.ylim_bottom = self.ylim_bottom or ylim_bottom
+        self.ylim_top = self.ylim_top or ylim_top
         # center around 1
         if self.ylim_bottom < 1:
             self.ylim_top = max(self.ylim_top, 1 / float(self.ylim_bottom))

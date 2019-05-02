@@ -74,7 +74,8 @@ def addScatterPlot(attrib, algorithm, compare="random"):
 	if compare != "random":
 		filename = filename + '-' + compare
 	exp.add_report(
-		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm], get_category=lambda run1, run2: run1["domain"]),
+		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm], get_category=lambda run1, run2: run1["domain"],
+            xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4),
 	outfile=filename + '.png')
 
 for alg in algorithms:
