@@ -49,6 +49,6 @@ class HistogramReport(PlanningReport):
                 bins[min(int(self.count * (val - dmin) / delta), self.count - 1)] += 1
         bars = ["value,count"]
         for i, cnt in enumerate(bins):
-            if cnt > 0:
-                bars.append("{},{}".format(dmin + delta * (i + 0.5) / self.count, cnt))
+            bars.append("{},{}".format(dmin + delta * i / self.count, cnt))
+        bars.append("{},{}".format(dmax, 0))
         return "\n".join(bars)
