@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
+
 from downward.reports import PlanningReport
 
 class HistogramReport(PlanningReport):
@@ -42,13 +44,24 @@ class HistogramReport(PlanningReport):
             dmin, dmax = self.min, self.max
         delta = dmax - dmin
         bins = [0] * self.count
+        domains, domainMap = [], {}
+        domainBins = []
         for run in self.props.values():
             val = run.get(self.attribute)
+            # ensure every domain exists, even if it provides no data
+            domain = run["domain"]
+            if domain not in domainMap:
+                domainMap[domain] = len(domains)
+                domains.append(domain)
+                domainBins.append([0] * self.count)
             if val is not None and val >= dmin and val <= dmax:
                 # secure against FP-issues near dmax
-                bins[min(int(self.count * (val - dmin) / delta), self.count - 1)] += 1
-        bars = ["value,count"]
+                binIdx = min(int(self.count * (val - dmin) / delta), self.count - 1)
+                bins[binIdx] += 1
+                domainBins[domainMap[domain]][binIdx] += 1
+        bars = ["value,count," + ",".join(domains)]
+        binDomains = list(zip(*domainBins)) # index by bin
         for i, cnt in enumerate(bins):
-            bars.append("{},{}".format(dmin + delta * i / self.count, cnt))
-        bars.append("{},{}".format(dmax, 0))
+            bars.append("{},{},".format(dmin + delta * i / self.count, cnt) + ",".join(map(str, binDomains[i])))
+        bars.append("{},{}".format(dmax, 0) + ",0" * len(domains))
         return "\n".join(bars)
