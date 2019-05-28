@@ -99,7 +99,7 @@ class AlgorithmComparisonReport(PlanningReport):
         
         # generate output
         lines = []
-        lines.append(r"\begin{center}\begin{tabular}{@{}l" + "ccc" * len(self.comparison) + "@{}}")
+        lines.append(r"\begin{center}\begin{tabular}{@{}l" + "|ccc" * len(self.comparison) + "@{}}")
         # emit header
         line = [""]
         for comp in self.comparison.values():
