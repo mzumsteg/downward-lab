@@ -15,6 +15,7 @@ from downward.reports.scatter import ScatterPlotReport
 from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
+from algorithm_comparison_report import AlgorithmComparisonReport
 
 def mean(list):
     return sum(list) / len(list)
@@ -67,6 +68,19 @@ exp.add_report(
     HistogramReport(attributes=["average_split_options"]), outfile='hist_split_options.csv')
 exp.add_report(
     HistogramReport(attributes=["average_distinct_rated"]), outfile='hist_distinct_rated.csv')
+
+def addComparisonReport(group, attribute):
+    exp.add_report(
+        AlgorithmComparisonReport(comparison=[("random", "min_" + group),
+                ("random", "max_" + group), ("min_" + group, "max_" + group)],
+            attributes=[attribute]), outfile=group+'-comparison.tex')
+addComparisonReport("unwanted", "expansions_until_last_jump")
+addComparisonReport("refined", "expansions_until_last_jump")
+addComparisonReport("hadd", "expansions_until_last_jump")
+addComparisonReport("cg", "expansions_until_last_jump")
+addComparisonReport("goal_dist", "expansions_until_last_jump")
+addComparisonReport("higher_dist", "expansions_until_last_jump")
+addComparisonReport("active_ops", "expansions_until_last_jump")
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):
