@@ -109,7 +109,8 @@ class AlgorithmComparisonReport(PlanningReport):
         # emit by-domain info
         lines.append(r"\midrule")
         for (domain, row) in results.items():
-            lines.append(self._format_row(domain, row) + r"\\")
+            if any(map(lambda curr: curr[2] > 0, row.values())):
+                lines.append(self._format_row(domain, row) + r"\\")
         # emit totals
         lines.append(r"\midrule")
         lines.append(self._format_row("Total", total))
