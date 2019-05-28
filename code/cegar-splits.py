@@ -73,7 +73,7 @@ def addComparisonReport(group, attribute):
     exp.add_report(
         AlgorithmComparisonReport(comparison=[("random", "min_" + group),
                 ("random", "max_" + group), ("min_" + group, "max_" + group)],
-            attributes=[attribute]), outfile=group+'-comparison.tex')
+            quantile=0.25, attributes=[attribute]), outfile=group+'-comparison.tex')
 addComparisonReport("unwanted", "expansions_until_last_jump")
 addComparisonReport("refined", "expansions_until_last_jump")
 addComparisonReport("hadd", "expansions_until_last_jump")
