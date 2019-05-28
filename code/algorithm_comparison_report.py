@@ -56,9 +56,9 @@ class AlgorithmComparisonReport(PlanningReport):
                 if quantile < 0.5:
                     left = "{0:.2f}".format(left_win)
                     right = "{0:.2f}".format(right_win)
-                    if left_win > 1 - quantile:
+                    if left_win > 1 - quantile or left_win < quantile:
                         left = r"\textcolor{{green!{1}!blue}}{{{0}}}".format(left, int(100 * left_win))
-                    if right_win > 1 - quantile:
+                    if right_win > 1 - quantile or right_win < quantile:
                         right = r"\textcolor{{green!{1}!blue}}{{{0}}}".format(right, int(100 * right_win))
                     line.append("%s %s" % (left, right))
                 else:
