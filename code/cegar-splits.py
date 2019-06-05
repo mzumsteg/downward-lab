@@ -12,10 +12,13 @@ from lab.reports import Attribute
 from experiment import CEGARExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.scatter import ScatterPlotReport
+
+from domain_groups import group_domains
 from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
-from algorithm_comparison_report import AlgorithmComparisonReport
+#from algorithm_comparison_report import AlgorithmComparisonReport
+from domain_comparison_report import DomainComparisonReport, OptimalStrategyEvaluator
 
 def mean(list):
     return sum(list) / len(list)
@@ -69,18 +72,22 @@ exp.add_report(
 exp.add_report(
     HistogramReport(attributes=["average_distinct_rated"]), outfile='hist_distinct_rated.csv')
 
-def addComparisonReport(group, attribute):
-    exp.add_report(
-        AlgorithmComparisonReport(comparison=[("random", "min_" + group),
-                ("random", "max_" + group), ("min_" + group, "max_" + group)],
-            quantile=0.25, attributes=[attribute]), outfile=group+'-comparison.tex')
-addComparisonReport("unwanted", "expansions_until_last_jump")
-addComparisonReport("refined", "expansions_until_last_jump")
-addComparisonReport("hadd", "expansions_until_last_jump")
-addComparisonReport("cg", "expansions_until_last_jump")
-addComparisonReport("goal_dist", "expansions_until_last_jump")
-addComparisonReport("higher_dist", "expansions_until_last_jump")
-addComparisonReport("active_ops", "expansions_until_last_jump")
+#def addComparisonReport(group, attribute):
+#    exp.add_report(
+#        AlgorithmComparisonReport(comparison=[("random", "min_" + group),
+#                ("random", "max_" + group), ("min_" + group, "max_" + group)],
+#            quantile=0.25, attributes=[attribute]), outfile=group+'-comparison.tex')
+#addComparisonReport("unwanted", "expansions_until_last_jump")
+#addComparisonReport("refined", "expansions_until_last_jump")
+#addComparisonReport("hadd", "expansions_until_last_jump")
+#addComparisonReport("cg", "expansions_until_last_jump")
+#addComparisonReport("goal_dist", "expansions_until_last_jump")
+#addComparisonReport("higher_dist", "expansions_until_last_jump")
+#addComparisonReport("active_ops", "expansions_until_last_jump")
+exp.add_report(
+    DomainComparisonReport(algorithms, OptimalStrategyEvaluator(optimum_bound=0.05),
+        attributes=["expansions_until_last_jump"], filter=group_domains),
+    outfile='optimality_comparison.tex')
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):
