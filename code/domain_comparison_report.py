@@ -25,6 +25,15 @@ class OptimalStrategyEvaluator:
         required = min(*values) + self.optimum_bound * max(*values)
         return tuple((1 if v <= required else 0) for v in values)
     
+    def _format_cell(self, cell):
+        if cell != 0:
+            if cell > 1 - self.quantile or cell < self.quantile:
+                return r"\textcolor{{green!{1}!blue}}{{{0:.4f}}}".format(cell, int(100 * cell))
+            else:
+                return "{:.4f}".format(cell)
+        else:
+            return r"\textbf{0}"
+    
     def format(self, groups):
         if len(groups) > 0:
             lines = []
@@ -41,7 +50,7 @@ class OptimalStrategyEvaluator:
                 for problem, algorithms in problems.items():
                     optimals.append(self._get_optimal(list(map(lambda run: run[self.attribute], algorithms))))
                 optimals = [sum(x) / len(x) for x in zip(*optimals)]
-                line = [("{:.4f}".format(x) if x != 0 else r"\textbf{0}") for x in optimals]
+                line = [self._format_cell(x) for x in optimals]
                 lines.append(" & ".join(["{} ({})".format(group, len(problems))] + line) + r"\\")
             # emit totals
             lines.append(r"\midrule")
@@ -50,7 +59,7 @@ class OptimalStrategyEvaluator:
                 for problem, algorithms in problems.items():
                     optimals.append(self._get_optimal(list(map(lambda run: run[self.attribute], algorithms))))
             optimals = [sum(x) / len(x) for x in zip(*optimals)]
-            line = [("{:.4f}".format(x) if x != 0 else r"\textbf{0}") for x in optimals]
+            line = [self._format_cell(x) for x in optimals]
             lines.append(" & ".join(["Total ({})".format(sum(map(len, groups.values())))] + line))
             lines.append(r"\end{tabular}\end{center}")
             return "\n".join(lines)
