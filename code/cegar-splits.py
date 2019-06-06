@@ -87,7 +87,7 @@ alg_names = [alg.lower() for alg in algorithms]
 #addComparisonReport("active_ops", "expansions_until_last_jump")
 exp.add_report(
     DomainComparisonReport(alg_names, OptimalStrategyEvaluator(optimum_bound=0.05), min_group_size=1,
-        attributes=["expansions_until_last_jump"], filter=group_domains),
+        attributes=["expansions_until_last_jump"], format="tex", filter=group_domains),
     outfile='optimality_comparison.tex')
 exp.add_report(
     DomainComparisonReport(["random"], ProblemStatisticsEvaluator(), min_group_size=2,
@@ -95,8 +95,20 @@ exp.add_report(
             "translator_operators",
             "translator_variables",
             "translator_facts"],
-        filter=group_domains),
+        format="tex", filter=group_domains),
     outfile='domain_statistics.tex')
+exp.add_report(
+    DomainComparisonReport(alg_names, OptimalStrategyEvaluator(optimum_bound=0.05), min_group_size=5,
+        attributes=["expansions_until_last_jump"], format="txt", filter=group_domains),
+    outfile='optimality_comparison.csv')
+exp.add_report(
+    DomainComparisonReport(["random"], ProblemStatisticsEvaluator(), min_group_size=2,
+        attributes=[
+            "translator_operators",
+            "translator_variables",
+            "translator_facts"],
+        format="txt", filter=group_domains),
+    outfile='domain_statistics.csv')
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):
