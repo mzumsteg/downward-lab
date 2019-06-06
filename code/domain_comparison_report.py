@@ -124,6 +124,11 @@ class DomainComparisonReport(PlanningReport):
         self.min_group_size = min_group_size
         evaluator.setReport(self)
     
+    def _is_run_valid(self, run):
+        valid = run["algorithm"] in self.algorithm_idx
+        valid = valid and all(map(lambda attrib: attrib in run, self.attributes))
+        return valid
+    
     def get_text(self):
         return self.get_markup()
     
@@ -131,7 +136,7 @@ class DomainComparisonReport(PlanningReport):
         # gather runs indexed by group, problem into a list of algorithms
         groups = defaultdict(lambda: defaultdict(lambda: [None] * len(self.algorithm_names)))
         for run in self.props.values():
-            if run["algorithm"] in self.algorithm_idx:
+            if self._is_run_valid(run):
                 groups[run["domain"]][run["problem"]][self.algorithm_idx[run["algorithm"]]] = run
         # remove problems which aren't solved by all algorithms
         for group, problems in groups.items():
