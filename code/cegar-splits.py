@@ -18,7 +18,7 @@ from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
 #from algorithm_comparison_report import AlgorithmComparisonReport
-from domain_comparison_report import DomainComparisonReport, OptimalStrategyEvaluator
+from domain_comparison_report import DomainComparisonReport, OptimalStrategyEvaluator, ProblemStatisticsEvaluator
 
 def mean(list):
     return sum(list) / len(list)
@@ -72,6 +72,7 @@ exp.add_report(
 exp.add_report(
     HistogramReport(attributes=["average_distinct_rated"]), outfile='hist_distinct_rated.csv')
 
+alg_names = [alg.lower() for alg in algorithms]
 #def addComparisonReport(group, attribute):
 #    exp.add_report(
 #        AlgorithmComparisonReport(comparison=[("random", "min_" + group),
@@ -85,9 +86,17 @@ exp.add_report(
 #addComparisonReport("higher_dist", "expansions_until_last_jump")
 #addComparisonReport("active_ops", "expansions_until_last_jump")
 exp.add_report(
-    DomainComparisonReport(algorithms, OptimalStrategyEvaluator(optimum_bound=0.05),
+    DomainComparisonReport(alg_names, OptimalStrategyEvaluator(optimum_bound=0.05), min_group_size=1,
         attributes=["expansions_until_last_jump"], filter=group_domains),
     outfile='optimality_comparison.tex')
+exp.add_report(
+    DomainComparisonReport(["random"], ProblemStatisticsEvaluator(), min_group_size=2,
+        attributes=[
+            "translator_operators",
+            "translator_variables",
+            "translator_facts"],
+        filter=group_domains),
+    outfile='domain_statistics.tex')
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):
