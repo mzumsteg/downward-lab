@@ -177,8 +177,8 @@ class DomainStatisticsEvaluator:
 class IdealProblemsEvaluator:
     OUTPUT_FORMATS = "txt".split()
     """
-    Creates a table listing statistical attributes of each domain
-    (generated over it's problems).
+    Creates a table of all problems, with a selection of attributes
+    and the performance of strategies for comparison.
     """
     def __init__(self, eval_attribute):
         self.eval_attribute = eval_attribute
@@ -191,14 +191,18 @@ class IdealProblemsEvaluator:
     
     def _format_txt(self, groups):
         lines = []
-        lines.append(",".join(["domain", "problem", "ideal"] + self.report.attributes))
+        attrib_names = list(self.report.attributes)
+        attrib_names.remove(self.eval_attribute)
+        lines.append(",".join(["domain", "problem"] + attrib_names + self.report.algorithm_names))
         if len(groups) > 0:
             for group, problems in groups.items():
                 for problem, algorithms in problems.items():
                     perf = zip(map(lambda run: run[self.eval_attribute], algorithms), self.report.algorithm_names)
                     ideal = min(perf)[1] if self.min_wins else max(perf)[1]
-                    attributes = list(map(lambda attrib: str(algorithms[0][attrib]), self.report.attributes))
-                    lines.append(",".join([group, problem, ideal] + attributes))
+                    line = [group, problem]
+                    line += list(map(lambda attrib: str(algorithms[0][attrib]), attrib_names))
+                    line += list(map(lambda alg: str(alg[self.eval_attribute]), algorithms))
+                    lines.append(",".join(line))
         return "\n".join(lines)
     
     def format(self, groups):
@@ -211,6 +215,8 @@ class DomainComparisonReport(PlanningReport):
     """
     def __init__(self, algorithms, evaluator, min_group_size=1, **kwargs):
         PlanningReport.__init__(self, **kwargs)
+        if len(set(self.attributes)) != len(self.attributes):
+            raise ValueError("Attributes may not appear multiple times")
         if len(algorithms) < 1:
             raise ValueError("Report needs at least one algorithm")
         if len(set(algorithms)) != len(algorithms):
