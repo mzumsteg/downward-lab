@@ -18,7 +18,8 @@ from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
 #from algorithm_comparison_report import AlgorithmComparisonReport
-from domain_comparison_report import DomainComparisonReport, OptimalStrategyEvaluator, ProblemStatisticsEvaluator
+from domain_comparison_report import (DomainComparisonReport, OptimalStrategyEvaluator,
+        DomainStatisticsEvaluator, IdealProblemsEvaluator)
 
 def mean(list):
     return sum(list) / len(list)
@@ -90,7 +91,7 @@ exp.add_report(
         attributes=["expansions_until_last_jump"], format="tex", filter=group_domains),
     outfile='optimality_comparison.tex')
 exp.add_report(
-    DomainComparisonReport(["random"], ProblemStatisticsEvaluator(), min_group_size=2,
+    DomainComparisonReport(["random"], DomainStatisticsEvaluator(), min_group_size=2,
         attributes=[
             "translator_operators",
             "translator_variables",
@@ -102,13 +103,22 @@ exp.add_report(
         attributes=["expansions_until_last_jump"], format="txt", filter=group_domains),
     outfile='optimality_comparison.csv')
 exp.add_report(
-    DomainComparisonReport(["random"], ProblemStatisticsEvaluator(), min_group_size=2,
+    DomainComparisonReport(["random"], DomainStatisticsEvaluator(), min_group_size=2,
         attributes=[
             "translator_operators",
             "translator_variables",
             "translator_facts"],
         format="txt", filter=group_domains),
     outfile='domain_statistics.csv')
+exp.add_report(
+    DomainComparisonReport(alg_names, IdealProblemsEvaluator("expansions_until_last_jump"),
+        attributes=[
+            "expansions_until_last_jump",
+            "translator_operators",
+            "translator_variables",
+            "translator_facts"],
+        format="txt", filter=group_domains),
+    outfile='problem_statistics.csv')
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):

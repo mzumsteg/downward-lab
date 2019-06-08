@@ -89,7 +89,7 @@ class OptimalStrategyEvaluator:
     def format(self, groups):
         return getattr(self, "_format_" + self.report.output_format)(groups)
 
-class ProblemStatisticsEvaluator:
+class DomainStatisticsEvaluator:
     TEX_CELL_PATTERN = r"$\mathbb{{V}} = \left[{}, {}\right];\; \mu = {:.1f};\; \sigma = {:.2f}$"
     TXT_CELL_PATTERN = "{},{},{:.3f},{:.5f}"
     OUTPUT_FORMATS = "tex txt".split()
@@ -174,12 +174,42 @@ class ProblemStatisticsEvaluator:
     def format(self, groups):
         return getattr(self, "_format_" + self.report.output_format)(groups)
 
+class IdealProblemsEvaluator:
+    OUTPUT_FORMATS = "txt".split()
+    """
+    Creates a table listing statistical attributes of each domain
+    (generated over it's problems).
+    """
+    def __init__(self, eval_attribute):
+        self.eval_attribute = eval_attribute
+        self.min_wins = getattr(eval_attribute, "min_wins", True)
+    
+    def setReport(self, report):
+        self.report = report
+        if report.output_format not in self.OUTPUT_FORMATS:
+            raise ValueError('invalid format: {}'.format(report.output_format))
+    
+    def _format_txt(self, groups):
+        lines = []
+        lines.append(",".join(["domain", "problem", "ideal"] + self.report.attributes))
+        if len(groups) > 0:
+            for group, problems in groups.items():
+                for problem, algorithms in problems.items():
+                    perf = zip(map(lambda run: run[self.eval_attribute], algorithms), self.report.algorithm_names)
+                    ideal = min(perf)[1] if self.min_wins else max(perf)[1]
+                    attributes = list(map(lambda attrib: str(algorithms[0][attrib]), self.report.attributes))
+                    lines.append(",".join([group, problem, ideal] + attributes))
+        return "\n".join(lines)
+    
+    def format(self, groups):
+        return getattr(self, "_format_" + self.report.output_format)(groups)
+
 class DomainComparisonReport(PlanningReport):
     """
     Creates a TeX file determining how often an algorithm
     is optimal with respect to a given attribute.
     """
-    def __init__(self, algorithms, evaluator, min_group_size=10, **kwargs):
+    def __init__(self, algorithms, evaluator, min_group_size=1, **kwargs):
         PlanningReport.__init__(self, **kwargs)
         if len(algorithms) < 1:
             raise ValueError("Report needs at least one algorithm")
