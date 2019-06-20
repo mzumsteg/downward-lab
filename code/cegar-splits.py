@@ -43,6 +43,8 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISION_CACHE = os.path.expanduser('~/lab/revision-cache')
 
 exp = CEGARExperiment(soft_limit=20*1024, hard_limit=50*1024, environment=ENV, revision_cache=REVISION_CACHE)
+DIR = os.path.dirname(os.path.abspath(__file__))
+exp.add_parser(os.path.join(DIR, "heuristic-stats-parser.py"))
 exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 algorithms = ["RANDOM", "MIN_UNWANTED", "MAX_UNWANTED",
