@@ -20,6 +20,7 @@ from histogram_report import HistogramReport
 #from algorithm_comparison_report import AlgorithmComparisonReport
 from domain_comparison_report import (DomainComparisonReport, OptimalStrategyEvaluator,
         DomainStatisticsEvaluator, IdealProblemsEvaluator)
+from h_stats_report import HeuristicStatisticsReport
 
 def mean(list):
     return sum(list) / len(list)
@@ -135,6 +136,20 @@ def addScatterPlot(attrib, algorithm, compare="random"):
 for alg in algorithms:
 	addScatterPlot("expansions_until_last_jump", alg.lower())
 	addScatterPlot("search_start_time", alg.lower())
+
+# create plots for the best/worst goal_dist heuristic values
+exp.add_report(HeuristicStatisticsReport(
+        "min_goal_dist", n_best=5, n_worst=0),
+    outfile="h-best-min_goal_dist.csv")
+exp.add_report(HeuristicStatisticsReport(
+        "min_goal_dist", n_best=0, n_worst=5),
+    outfile="h-worst-min_goal_dist.csv")
+exp.add_report(HeuristicStatisticsReport(
+        "max_goal_dist", n_best=5, n_worst=0),
+    outfile="h-best-max_goal_dist.csv")
+exp.add_report(HeuristicStatisticsReport(
+        "max_goal_dist", n_best=0, n_worst=5),
+    outfile="h-worst-max_goal_dist.csv")
 
 # Parse the commandline and show or run experiment steps.
 exp.run_steps()
