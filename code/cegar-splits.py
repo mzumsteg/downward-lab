@@ -18,7 +18,7 @@ from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
 from domain_comparison_report import (DomainComparisonReport, OptimalStrategyEvaluator,
-        DomainStatisticsEvaluator, IdealProblemsEvaluator)
+        IdealProblemsEvaluator, AttributeStatisticsEvaluator)
 from h_stats_report import HeuristicStatisticsReport
 
 def mean(list):
@@ -89,6 +89,11 @@ exp.add_report(
             "translator_facts"],
         format="txt", filter=group_domains),
     outfile='problem_statistics.csv')
+exp.add_report(
+    DomainComparisonReport(alg_names, AttributeStatisticsEvaluator(),
+        attributes=["average_split_options", "average_distinct_rated"],
+        format="tex", filter=group_domains),
+    outfile='attribute_statistics.tex')
 
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):

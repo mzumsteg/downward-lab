@@ -89,91 +89,6 @@ class OptimalStrategyEvaluator:
     def format(self, groups):
         return getattr(self, "_format_" + self.report.output_format)(groups)
 
-class DomainStatisticsEvaluator:
-    TEX_CELL_PATTERN = r"$\mathbb{{V}} = \left[{}, {}\right];\; \mu = {:.1f};\; \sigma = {:.2f}$"
-    TXT_CELL_PATTERN = "{},{},{:.3f},{:.5f}"
-    OUTPUT_FORMATS = "tex txt".split()
-    """
-    Creates a table listing statistical attributes of each domain
-    (generated over it's problems).
-    """
-    def __init__(self):
-        pass
-    
-    def setReport(self, report):
-        self.report = report
-        if report.output_format not in self.OUTPUT_FORMATS:
-            raise ValueError('invalid format: {}'.format(report.output_format))
-        # the planner is never run without an algorithm,
-        # so to avoid duplicate data we have to pick one still
-        if len(report.algorithm_names) != 1:
-            raise ValueError("Evaluator needs exactly one algorithm")
-    
-    def _format_tex(self, groups):
-        if len(groups) > 0:
-            lines = []
-            lines.append(r"\begin{center}\begin{tabular}{@{}l" + "|c" * len(self.report.attributes) + "@{}}")
-            line = [""]
-            for attrib in self.report.attributes:
-                line.append(r"\textbf{%s}" % attrib.replace("_", r"{\_}"))
-            lines.append(" & ".join(line) + r"\\")
-            lines.append(r"\midrule")
-            for group, problems in groups.items():
-                line = ["{} ({})".format(group, len(problems))]
-                for attrib in self.report.attributes:
-                    values = list(map(lambda run: run[0][attrib], problems.values()))
-                    lower, upper, mean = min(values), max(values), sum(values) / len(values)
-                    stddev = sqrt(sum(map(lambda x: (x - mean)**2, values)) / (len(values) - 1))
-                    line.append(self.TEX_CELL_PATTERN.format(lower, upper, mean, stddev))
-                lines.append(" & ".join(line) + r"\\")
-            # emit totals
-            lines.append(r"\midrule")
-            line = ["Total ({})".format(sum(map(len, groups.values())))]
-            for attrib in self.report.attributes:
-                values = []
-                for group, problems in groups.items():
-                    values += list(map(lambda run: run[0][attrib], problems.values()))
-                    lower, upper, mean = min(values), max(values), sum(values) / len(values)
-                    stddev = sqrt(sum(map(lambda x: (x - mean)**2, values)) / (len(values) - 1))
-                line.append(self.TEX_CELL_PATTERN.format(lower, upper, len(values), mean, stddev))
-            lines.append(" & ".join(line))
-            lines.append(r"\end{tabular}\end{center}")
-            return "\n".join(lines)
-        else:
-            return r"\textbf{NO DATA}"
-    
-    def _format_txt(self, groups):
-        lines = []
-        line = ["domain", "count"]
-        for attrib in self.report.attributes:
-            line.append("min_" + attrib)
-            line.append("max_" + attrib)
-            line.append("mean_" + attrib)
-            line.append("std_" + attrib)
-        lines.append(",".join(line))
-        if len(groups) > 0:
-            for group, problems in groups.items():
-                line = [group, str(len(problems))]
-                for attrib in self.report.attributes:
-                    values = list(map(lambda run: run[0][attrib], problems.values()))
-                    lower, upper, mean = min(values), max(values), sum(values) / len(values)
-                    stddev = sqrt(sum(map(lambda x: (x - mean)**2, values)) / (len(values) - 1))
-                    line.append(self.TXT_CELL_PATTERN.format(lower, upper, mean, stddev))
-                lines.append(",".join(line))
-            line = ["_total", str(sum(map(len, groups.values())))]
-            for attrib in self.report.attributes:
-                values = []
-                for group, problems in groups.items():
-                    values += list(map(lambda run: run[0][attrib], problems.values()))
-                    lower, upper, mean = min(values), max(values), sum(values) / len(values)
-                    stddev = sqrt(sum(map(lambda x: (x - mean)**2, values)) / (len(values) - 1))
-                line.append(self.TXT_CELL_PATTERN.format(lower, upper, len(values), mean, stddev))
-            lines.append(",".join(line))
-        return "\n".join(lines)
-    
-    def format(self, groups):
-        return getattr(self, "_format_" + self.report.output_format)(groups)
-
 class IdealProblemsEvaluator:
     OUTPUT_FORMATS = "txt".split()
     """
@@ -204,6 +119,48 @@ class IdealProblemsEvaluator:
                     line += list(map(lambda alg: str(alg[self.eval_attribute]), algorithms))
                     lines.append(",".join(line))
         return "\n".join(lines)
+    
+    def format(self, groups):
+        return getattr(self, "_format_" + self.report.output_format)(groups)
+
+class AttributeStatisticsEvaluator:
+    OUTPUT_FORMATS = "tex".split()
+    """
+    Creates a table of all problems, with a selection of attributes
+    and the performance of strategies for comparison.
+    """
+    def __init__(self):
+        pass
+    
+    def setReport(self, report):
+        self.report = report
+        if report.output_format not in self.OUTPUT_FORMATS:
+            raise ValueError('invalid format: {}'.format(report.output_format))
+    
+    def _format_tex(self, groups):
+        if len(groups) > 0:
+            lines = []
+            lines.append(r"\begin{center}\begin{tabular}{@{}l" + "|cc" * len(self.report.attributes) + "@{}}")
+            line = [""]
+            for attrib in self.report.attributes:
+                attr_name = attrib.replace("_", r"{\_}")
+                line.append(r"$\mu_{\textbf{%s}}$" % attr_name)
+                line.append(r"$\sigma_{\textbf{%s}}$" % attr_name)
+            lines.append(" & ".join(line) + r"\\")
+            lines.append(r"\midrule")
+            values = sum([list(problems.values()) for problems in groups.values()], [])
+            for i, alg in enumerate(self.report.algorithm_names):
+                line = [alg.replace("_", r"{\_}")]
+                for attr in self.report.attributes:
+                    mean = sum([v[i][attr] for v in values]) / len(values)
+                    stddev = sqrt(sum([(v[i][attr] - mean)**2 for v in values]) / len(values))
+                    line.append("{:.2f}".format(mean))
+                    line.append("{:.3f}".format(stddev))
+                lines.append(" & ".join(line) + r"\\")
+            lines.append(r"\end{tabular}\end{center}")
+            return "\n".join(lines)
+        else:
+            return r"\textbf{NO DATA}"
     
     def format(self, groups):
         return getattr(self, "_format_" + self.report.output_format)(groups)
