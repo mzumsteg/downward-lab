@@ -12,9 +12,14 @@ from lab.reports import Attribute
 from experiment import CEGARExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.scatter import ScatterPlotReport
+
+from domain_groups import group_domains
 from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
+from domain_comparison_report import (DomainComparisonReport, OptimalStrategyEvaluator,
+        DomainStatisticsEvaluator, IdealProblemsEvaluator)
+from h_stats_report import HeuristicStatisticsReport
 
 def mean(list):
     return sum(list) / len(list)
@@ -68,14 +73,29 @@ exp.add_report(
 exp.add_report(
     HistogramReport(attributes=["average_distinct_rated"]), outfile='hist_distinct_rated.csv')
 
+alg_names = [alg.lower() for alg in algorithms]
+exp.add_report(
+    DomainComparisonReport(alg_names, OptimalStrategyEvaluator(optimum_bound=0.05), min_group_size=1,
+        attributes=["expansions_until_last_jump"], format="tex", filter=group_domains),
+    outfile='optimality_comparison.tex')
+exp.add_report(
+    DomainComparisonReport(alg_names, IdealProblemsEvaluator("expansions_until_last_jump"),
+        attributes=[
+            "expansions_until_last_jump",
+            "translator_operators",
+            "translator_variables",
+            "translator_facts"],
+        format="txt", filter=group_domains),
+    outfile='problem_statistics.csv')
+
 # Add scatter plot report step.
 def addScatterPlot(attrib, algorithm, compare="random"):
 	filename = 'scatter-' + attrib + '-' + algorithm
 	if compare != "random":
 		filename = filename + '-' + compare
 	exp.add_report(
-		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm], get_category=lambda run1, run2: run1["domain"],
-            xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4),
+		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm],
+			xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4),
 	outfile=filename + '.png')
 
 for alg in algorithms:

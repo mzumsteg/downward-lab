@@ -17,7 +17,6 @@ from domain_groups import group_domains
 from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
 from histogram_report import HistogramReport
-#from algorithm_comparison_report import AlgorithmComparisonReport
 from domain_comparison_report import (DomainComparisonReport, OptimalStrategyEvaluator,
         DomainStatisticsEvaluator, IdealProblemsEvaluator)
 from h_stats_report import HeuristicStatisticsReport
@@ -77,42 +76,10 @@ exp.add_report(
     HistogramReport(attributes=["average_distinct_rated"]), outfile='hist_distinct_rated.csv')
 
 alg_names = [alg.lower() for alg in algorithms]
-#def addComparisonReport(group, attribute):
-#    exp.add_report(
-#        AlgorithmComparisonReport(comparison=[("random", "min_" + group),
-#                ("random", "max_" + group), ("min_" + group, "max_" + group)],
-#            quantile=0.25, attributes=[attribute]), outfile=group+'-comparison.tex')
-#addComparisonReport("unwanted", "expansions_until_last_jump")
-#addComparisonReport("refined", "expansions_until_last_jump")
-#addComparisonReport("hadd", "expansions_until_last_jump")
-#addComparisonReport("cg", "expansions_until_last_jump")
-#addComparisonReport("goal_dist", "expansions_until_last_jump")
-#addComparisonReport("higher_dist", "expansions_until_last_jump")
-#addComparisonReport("active_ops", "expansions_until_last_jump")
 exp.add_report(
     DomainComparisonReport(alg_names, OptimalStrategyEvaluator(optimum_bound=0.05), min_group_size=1,
         attributes=["expansions_until_last_jump"], format="tex", filter=group_domains),
     outfile='optimality_comparison.tex')
-exp.add_report(
-    DomainComparisonReport(["random"], DomainStatisticsEvaluator(), min_group_size=2,
-        attributes=[
-            "translator_operators",
-            "translator_variables",
-            "translator_facts"],
-        format="tex", filter=group_domains),
-    outfile='domain_statistics.tex')
-exp.add_report(
-    DomainComparisonReport(alg_names, OptimalStrategyEvaluator(optimum_bound=0.05), min_group_size=5,
-        attributes=["expansions_until_last_jump"], format="txt", filter=group_domains),
-    outfile='optimality_comparison.csv')
-exp.add_report(
-    DomainComparisonReport(["random"], DomainStatisticsEvaluator(), min_group_size=2,
-        attributes=[
-            "translator_operators",
-            "translator_variables",
-            "translator_facts"],
-        format="txt", filter=group_domains),
-    outfile='domain_statistics.csv')
 exp.add_report(
     DomainComparisonReport(alg_names, IdealProblemsEvaluator("expansions_until_last_jump"),
         attributes=[
@@ -129,8 +96,8 @@ def addScatterPlot(attrib, algorithm, compare="random"):
 	if compare != "random":
 		filename = filename + '-' + compare
 	exp.add_report(
-		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm], get_category=lambda run1, run2: run1["domain"],
-            xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4),
+		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm],
+			xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4),
 	outfile=filename + '.png')
 
 for alg in algorithms:
