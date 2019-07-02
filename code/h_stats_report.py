@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 from collections import defaultdict
 
@@ -17,12 +18,12 @@ class HeuristicStatisticsReport(PlanningReport):
         PlanningReport.__init__(self, **kwargs)
         self.attribute = self.attributes[0]
         self.algorithm = algorithm
-        self.eval_attrib = eval_attrib
-        self.min_wins = getattr(eval_attrib, "min_wins", True)
         if n_best <= 0 and n_worst <= 0:
             raise ValueError("Report must select at least one run")
         self.n_best = n_best
         self.n_worst = n_worst
+        self.eval_attrib = eval_attrib
+        self.min_wins = getattr(eval_attrib, "min_wins", True)
     
     def get_text(self):
         return self.get_markup()
@@ -43,22 +44,31 @@ class HeuristicStatisticsReport(PlanningReport):
         if not candidates:
             return "No suitable candidates"
         candidates.sort()
-        header = ["N"]
-        if len(candidates) > self.n_best + self.n_worst:
-            picks = []
-            if self.n_best > 0:
-                header += ["best_" + str(x + 1) for x in range(self.n_best)]
-                picks += candidates[:self.n_best]
-            if self.n_worst > 0:
-                header += ["worst_" + str(x + 1) for x in range(self.n_worst)]
-                picks += candidates[-self.n_worst:]
-        else:
-            header += ["best_" + str(x + 1) for x in range(len(candidates))]
-            picks = list(candidates)
+        header, picks = ["N"], []
+        used_domains = set()
+        
+        header += ["best_" + str(x + 1) for x in range(self.n_best)]
+        for i in range(self.n_best):
+            values = filter(lambda v: v[1]["domain"] not in used_domains, candidates)
+            if not values:
+                return "Not enough candidates"
+            pick = values[0][1]
+            used_domains.add(pick["domain"])
+            picks.append(pick)
+        
+        header += ["worst_" + str(x + 1) for x in range(self.n_worst)]
+        for i in range(self.n_worst):
+            values = filter(lambda v: v[1]["domain"] not in used_domains, candidates)
+            if not values:
+                return "Not enough candidates"
+            pick = values[-1][1]
+            used_domains.add(pick["domain"])
+            picks.append(pick)
+        
         for i, pick in enumerate(picks):
-            print(pick[1]["id"])
-            picks[i] = {s[0]: s[1] for s in pick[1]["h_split_statistics"]}
+            print(pick["id"])
+            picks[i] = {s[0]: s[1] for s in pick["h_split_statistics"]}
         lines = [",".join(header)]
         for mark in sorted(set(sum((pick.keys() for pick in picks), []))):
-            lines.append(",".join([str(mark)] + [(str(pick[mark]) if mark in pick else "") for pick in picks]))
+            lines.append(",".join([str(mark)] + [(str(abs(pick[mark])) if mark in pick else "") for pick in picks]))
         return "\n".join(lines)
