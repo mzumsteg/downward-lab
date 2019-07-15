@@ -14,6 +14,10 @@ from downward.reports.plot import PlotReport, Matplotlib, MatplotlibPlot, PgfPlo
 class RelativeScatterMatplotlib(Matplotlib):
     @classmethod
     def _plot(cls, report, axes, categories, styles):
+        if report.title_size:
+            axes.title.set_size(report.title_size)
+        if report.tick_size:
+            axes.tick_params(labelsize=report.tick_size)
         # Display grid
         axes.grid(b=True, linestyle='-', color='0.75')
 
@@ -46,6 +50,8 @@ class RelativeScatterMatplotlib(Matplotlib):
         axes.set_ylim(report.ylim_bottom or -1, report.ylim_top or plot_size)
 
         for axis in [axes.xaxis, axes.yaxis]:
+            if report.label_size:
+                axis.label.set_size(report.label_size)
             MatplotlibPlot.change_axis_formatter(
                 axis,
                 report.missing_val if report.show_missing else None)
@@ -110,12 +116,15 @@ class RelativeScatterPlotReport(ScatterPlotReport):
     """
 
     def __init__(self, show_missing=True, get_category=None, xlim_left = None, xlim_right = None,
-            ylim_bottom = None, ylim_top = None, **kwargs):
+            ylim_bottom = None, ylim_top = None, tick_size=None, label_size=None, title_size=None, **kwargs):
         ScatterPlotReport.__init__(self, show_missing, get_category, **kwargs)
         self.xlim_left = xlim_left
         self.xlim_right = xlim_right
         self.ylim_bottom = ylim_bottom
         self.ylim_top = ylim_top
+        self.tick_size = tick_size
+        self.label_size = label_size
+        self.title_size = title_size
         if self.output_format == 'tex':
             self.writer = RelativeScatterPgfPlots
         else:
