@@ -110,6 +110,9 @@ for alg in alg_names:
         addScatterPlot("expansions_until_last_jump", alg)
         addScatterPlot("search_start_time", alg)
 
+for alg in ["unwanted", "refined", "hadd", "cg", "goal_dist", "higher_dist", "active_ops"]:
+    addScatterPlot("expansions_until_last_jump", "max_" + alg, "min_" + alg)
+
 # create plots for the best/worst goal_dist heuristic values
 exp.add_report(HeuristicStatisticsReport(
         "min_goal_dist", n_best=5, n_worst=0),
