@@ -71,9 +71,9 @@ exp.add_report(
 exp.add_report(
 	PerTaskComparison(sort=True, attributes=["expansions_until_last_jump"]), outfile='task_comparison.html')
 exp.add_report(
-    HistogramReport(attributes=["average_split_options"]), outfile='hist_split_options.csv')
+    HistogramReport(attributes=["average_split_options"], filter=group_domains), outfile='hist_split_options.csv')
 exp.add_report(
-    HistogramReport(attributes=["average_distinct_rated"]), outfile='hist_distinct_rated.csv')
+    HistogramReport(attributes=["average_distinct_rated"], filter=group_domains), outfile='hist_distinct_rated.csv')
 
 alg_names = [alg.lower() for alg in algorithms]
 exp.add_report(
