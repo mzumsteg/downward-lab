@@ -100,11 +100,15 @@ def addScatterPlot(attrib, algorithm, compare="random"):
 		filename = filename + '-' + compare
 	exp.add_report(
 		RelativeScatterPlotReport(attributes=[attrib], filter_algorithm=[compare, algorithm],
-			xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4),
-	outfile=filename + '.png')
+			xlim_left = 1e-1, ylim_bottom = 1e-4, ylim_top = 1e4, tick_size=14, label_size=20, title_size=24),
+		outfile=filename + '.png')
 
 for alg in algorithms:
-	addScatterPlot("expansions_until_last_jump", alg.lower())
+    if alg != "random":
+        addScatterPlot("expansions_until_last_jump", alg.lower())
+
+for alg in ["unwanted", "refined", "hadd", "cg", "goal_dist", "higher_dist", "active_ops"]:
+    addScatterPlot("expansions_until_last_jump", "max_" + alg, "min_" + alg)
 
 # Parse the commandline and show or run experiment steps.
 exp.run_steps()
