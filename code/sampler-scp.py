@@ -13,20 +13,14 @@ from experiment import CEGARExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.scatter import ScatterPlotReport
 
-from domain_groups import group_domains
 from per_task_comparison import PerTaskComparison
 from relativescatter import RelativeScatterPlotReport
-from histogram_report import HistogramReport
-from domain_comparison_report import (DomainComparisonReport, OptimalStrategyEvaluator,
-        IdealProblemsEvaluator, AttributeStatisticsEvaluator)
-from h_stats_report import HeuristicStatisticsReport
+from best_tabular import BestTabularReport
 
 def mean(list):
     return sum(list) / len(list)
 ATTRIBUTES = ["coverage", "error", "expansions_until_last_jump", "initial_h_value",
-    "search_start_time", "search_start_memory", "split_time",
-    Attribute("average_split_options", functions=mean, min_wins=False),
-    Attribute("average_distinct_rated", functions=mean, min_wins=False)]
+    "search_start_time", "search_start_memory"]
 
 NODE = platform.node()
 if NODE.endswith(".scicore.unibas.ch") or NODE.endswith(".cluster.bc2.ch"):
@@ -85,6 +79,8 @@ for spl in splitters[1:]:
 	for smpl in samplers[1:]:
 		addScatterPlot("expansions_until_last_jump", spl.lower() + "-" + smpl.lower(),
 			spl.lower() + "-" + samplers[0].lower())
+
+exp.add_report(BestTabularReport(10, total=True, attributes=["coverage"]), outfile="best_coverage.tex")
 
 # Parse the commandline and show or run experiment steps.
 exp.run_steps()
